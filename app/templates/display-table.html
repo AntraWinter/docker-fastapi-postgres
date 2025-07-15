@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Show Defect Table</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="/static/CSS/style.css" type="text/css">
+</head>
+<body>
+    <h1 align="center">Таблица дефектов</h1>
+    <table id="defectTable">
+        <thead>
+            <tr>
+                <th>№</th>
+                <th>Местоположение</th>
+                <th>Описание дефекта</th>
+                <th>Категория дефекта по ГОСТ 15467</th>
+                <th>Метод устранения</th>
+                <th>Фотография</th>
+                <th>Ссылка на метку в туре</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            <!-- Данные будут вставлены сюда -->
+        </tbody>
+    </table>
+    <script>
+        async function loadDefects() {
+            try {
+                const response = await fetch("/defects-table/");
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const defects = await response.json();
+                const tbody = document.getElementById('tableBody');
+                tbody.innerHTML = ''; // Очистка таблицы перед загрузкой новых данных
+
+                for (let i = 0; i < defects.length; i++) {
+                    const defect = defects[i];
+                    const row = document.createElement('tr');
+                    
+                    let photoContent = defect.photo ? `<img src="data:image/*;base64,${defect.photo}" class="preview-img" alt="Фото дефекта">` : 'Нет фото';
+                    let tagLinkContent = defect.tag_link ? `<a href="${defect.tag_link}" class="link" target="_blank">${defect.tag_link}</a>` : 'Нет ссылки';
+
+                    row.innerHTML = `
+                        <td>${i + 1}</td>
+                        <td>${defect.location}</td>
+                        <td>${defect.defect_description}</td>
+                        <td>${defect.defect_category}</td>
+                        <td>${defect.elimination_method}</td>
+                        <td>${photoContent}</td>
+                        <td>${tagLinkContent}</td>
+                    `;
+                    tbody.appendChild(row);
+                }
+                 
+            } catch (error) {
+                console.error('Ошибка при загрузке данных:', error);
+                alert('Ошибка при загрузке данных: ' + error.message);
+            }
+        }
+
+        window.onload = loadDefects;
+    </script>
+</body>
+</html>
